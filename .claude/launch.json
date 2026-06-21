@@ -8,6 +8,14 @@
       "cwd": "web",
       "port": 3000,
       "autoPort": false
+    },
+    {
+      "name": "static",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "_preview", "-l", "4173"],
+      "cwd": "web",
+      "port": 4173,
+      "autoPort": false
     }
   ]
 }

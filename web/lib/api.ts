@@ -1,7 +1,13 @@
 // API client + shared types for the golf dashboard frontend.
 
+// Two data modes:
+//  - dev (default): fetch from the live FastAPI backend on :8000
+//  - static (NEXT_PUBLIC_STATIC=1): fetch bundled JSON exported by export_static.py
+//    (used for the GitHub Pages build; BASE_PATH is the Pages sub-path)
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
+const STATIC = process.env.NEXT_PUBLIC_STATIC === "1";
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 export interface Round {
   scorecard_id: number;
@@ -87,16 +93,21 @@ export interface Trends {
   shot_distance: { type: string; avg_m: number; count: number }[];
 }
 
-async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
-  if (!res.ok) throw new Error(`API ${path} → ${res.status}`);
+async function get<T>(url: string): Promise<T> {
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error(`fetch ${url} → ${res.status}`);
   return res.json() as Promise<T>;
 }
 
 export const api = {
-  rounds: () => get<Round[]>("/api/rounds"),
-  round: (id: number | string) => get<RoundDetail>(`/api/rounds/${id}`),
-  trends: () => get<Trends>("/api/trends"),
+  rounds: () =>
+    get<Round[]>(STATIC ? `${BASE_PATH}/data/rounds.json` : `${API_BASE}/api/rounds`),
+  round: (id: number | string) =>
+    get<RoundDetail>(
+      STATIC ? `${BASE_PATH}/data/round-${id}.json` : `${API_BASE}/api/rounds/${id}`
+    ),
+  trends: () =>
+    get<Trends>(STATIC ? `${BASE_PATH}/data/trends.json` : `${API_BASE}/api/trends`),
 };
 
 // ---- shared display helpers ----

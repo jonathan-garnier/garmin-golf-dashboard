@@ -20,4 +20,9 @@ golf.db
 # Frontend build artifacts
 web/node_modules/
 web/.next/
+web/out/
+web/_preview/
 web/.env.local
+
+# NOTE: web/public/data/*.json (exported by export_static.py) IS committed —
+# it's the data the static GitHub Pages build serves.
