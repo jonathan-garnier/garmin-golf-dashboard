@@ -1,0 +1,23 @@
+# Garmin auth tokens (expiring OAuth session — never commit)
+.garmin_tokens/
+
+# Fetched data & local FIT files
+garmin_out/
+*.fit
+*.FIT
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# Generated DB / logs
+golf.db
+*.log
+
+# Frontend build artifacts
+web/node_modules/
+web/.next/
+web/.env.local

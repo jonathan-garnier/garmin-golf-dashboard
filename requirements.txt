@@ -1,0 +1,8 @@
+# Backend (data pipeline + JSON API)
+fitdecode==0.11.0          # parse Garmin .fit files
+garminconnect==0.3.2       # pull scorecards/shots from Garmin Connect
+fastapi==0.138.0           # JSON API consumed by the Next.js frontend
+uvicorn[standard]==0.49.0
+
+# Legacy Streamlit prototype (superseded by web/ — optional):
+#   streamlit, folium, streamlit-folium, pandas
