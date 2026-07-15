@@ -33,8 +33,27 @@ def save(name, obj):
     print(f"  saved -> {path}")
 
 
+def _seed_token_from_env():
+    """In CI, materialize the token file from the GARMIN_TOKEN_B64 secret."""
+    b64 = os.environ.get("GARMIN_TOKEN_B64")
+    if not b64:
+        return
+    import base64
+    os.makedirs(TOKENS, exist_ok=True)
+    with open(os.path.join(TOKENS, "garmin_tokens.json"), "wb") as f:
+        f.write(base64.b64decode(b64))
+
+
 def make_client():
-    """Resume from cached token if possible; otherwise prompt and cache."""
+    """Resume from cached token if possible; otherwise prompt and cache.
+
+    Headless mode: set GARMIN_HEADLESS=1 (and provide GARMIN_TOKEN_B64) to run
+    without any prompt — used by the GitHub Action. On token failure it exits
+    with a clear message instead of blocking on input().
+    """
+    _seed_token_from_env()
+    headless = os.environ.get("GARMIN_HEADLESS") == "1"
+
     client = Garmin()
     if os.path.isdir(TOKENS) and os.listdir(TOKENS):
         try:
@@ -43,7 +62,16 @@ def make_client():
             print("Resumed OK (no password needed).\n")
             return client
         except Exception as e:
-            print(f"  cached token unusable ({e}); doing fresh login.\n")
+            print(f"  cached token unusable ({e}).")
+            if headless:
+                sys.exit("Headless login failed — the Garmin token has likely "
+                         "expired. Re-run fetch_golf.py locally to refresh it, "
+                         "then update the GARMIN_TOKEN_B64 secret.")
+            print("  doing fresh login.\n")
+
+    if headless:
+        sys.exit("Headless mode but no usable token. Set the GARMIN_TOKEN_B64 "
+                 "secret from a local .garmin_tokens/garmin_tokens.json.")
 
     print("Fresh login — password is not stored.")
     email = input("Garmin email: ").strip()
