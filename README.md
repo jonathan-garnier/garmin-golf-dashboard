@@ -99,8 +99,11 @@ golf data" → Run workflow**.
 **Notes:**
 - The token grants read access to your Garmin account. It's an encrypted GitHub
   secret and masked in logs, but it lives in a public repo's settings — revoke by
-  changing your Garmin password. It lasts months; when it expires the workflow
-  fails with a clear message — just redo steps 1–3.
+  changing your Garmin password.
+- The token lasts a few months. When it expires the workflow fails with
+  "Headless login failed — token expired". To refresh: run **`python
+  refresh_token.py`** locally (it re-logs in and prints a new base64), then paste
+  the output into the `GARMIN_TOKEN_B64` secret and re-run the workflow.
 - Phone refreshes include scores + shots (from Garmin Connect) but **not FIT walk
   paths** (those need the watch plugged into your PC — refresh locally for those).
 
