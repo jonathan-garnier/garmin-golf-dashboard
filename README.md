@@ -66,7 +66,7 @@ Live URL: **https://jonathan-garnier.github.io/garmin-golf-dashboard/**
 **One-time setup:** in the repo on GitHub → **Settings → Pages → Build and
 deployment → Source: GitHub Actions**.
 
-**To publish new rounds:**
+**To publish new rounds** (when the Garmin API works — see caveat below):
 ```powershell
 python fetch_golf.py
 python parse.py
@@ -74,6 +74,27 @@ python export_static.py        # refresh the bundled JSON
 git add -A; git commit -m "Update golf data"; git push
 ```
 The push triggers the Actions workflow, which rebuilds and redeploys (~1–2 min).
+
+### ⚠️ Garmin blocked the API libraries (Sept 2026) — browser fallback
+
+Garmin changed their login and now blocks the Python libraries
+(`garminconnect`/`garth`), so `fetch_golf.py` (and the phone workflow) fail with
+a 401. Until the libraries are patched, pull your data through your **browser
+session** instead:
+
+1. Log in at <https://connect.garmin.com>.
+2. Open DevTools (F12) → **Console**. If it warns about pasting, type
+   `allow pasting` and Enter.
+3. Paste the entire contents of **`browser_fetch.js`** and press Enter. It
+   downloads `garmin-golf-export.json`.
+4. Move that file into this folder and run:
+   ```powershell
+   python import_browser_data.py garmin-golf-export.json
+   git add -A; git commit -m "Update golf data"; git push
+   ```
+
+This uses your real browser session (which Garmin trusts), so it isn't affected
+by the login block. Note: no FIT walk paths this way (they need the watch).
 
 Two data modes share one frontend: local `npm run dev` reads the live FastAPI
 backend; the hosted build (`NEXT_PUBLIC_STATIC=1`, set by the workflow) reads the

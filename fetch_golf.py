@@ -33,6 +33,23 @@ def save(name, obj):
     print(f"  saved -> {path}")
 
 
+def _use_browser_ua():
+    """Work around Garmin's Cloudflare block (Sept 2026).
+
+    Garmin started blocking the library's mobile-app API User-Agent
+    ("GCM-Android-5.23"), which makes the first authenticated call (socialProfile)
+    return 401 right after an otherwise-successful login. Swap it for the
+    library's desktop-browser User-Agent. See matin/garth discussion #222.
+    """
+    try:
+        import garminconnect.client as gc
+        gc.NATIVE_API_USER_AGENT = gc.DESKTOP_USER_AGENT
+        # Present as a desktop web client rather than the Android app.
+        gc.NATIVE_X_GARMIN_USER_AGENT = gc.DESKTOP_USER_AGENT
+    except Exception as e:  # never let the patch break the run
+        print(f"  (browser-UA patch not applied: {e})")
+
+
 def _seed_token_from_env():
     """In CI, materialize the token file from the GARMIN_TOKEN_B64 secret."""
     b64 = os.environ.get("GARMIN_TOKEN_B64")
@@ -51,6 +68,7 @@ def make_client():
     without any prompt — used by the GitHub Action. On token failure it exits
     with a clear message instead of blocking on input().
     """
+    _use_browser_ua()
     _seed_token_from_env()
     headless = os.environ.get("GARMIN_HEADLESS") == "1"
 
